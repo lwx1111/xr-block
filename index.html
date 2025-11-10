@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no" />
+    <title>XR Blocks Demo</title>
+
+    <!-- 样式（非必须，只是让画面更美观） -->
+    <link
+      rel="stylesheet"
+      href="https://cdn.jsdelivr.net/gh/google/xrblocks@build/samples/main.css"
+    />
+
+    <!-- importmap 负责声明 three / xrblocks 模块的来源 -->
+    <script type="importmap">
+      {
+        "imports": {
+          "three": "https://cdn.jsdelivr.net/npm/three@0.181.0/build/three.module.js",
+          "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.181.0/examples/jsm/",
+          "xrblocks": "https://cdn.jsdelivr.net/gh/google/xrblocks@build/xrblocks.js",
+          "xrblocks/addons/": "https://cdn.jsdelivr.net/gh/google/xrblocks@build/addons/"
+        }
+      }
+    </script>
+  </head>
+
+  <body>
+    <script type="module">
+      import * as THREE from "three";
+      import * as xb from "xrblocks";
+
+      class MainScript extends xb.Script {
+        init() {
+          // 添加光源
+          this.add(new THREE.HemisphereLight(0xffffff, 0x666666, 3));
+
+          // 创建一个圆柱体
+          const geometry = new THREE.CylinderGeometry(0.2, 0.2, 0.4, 32);
+          const material = new THREE.MeshPhongMaterial({
+            color: 0xffffff,
+            transparent: true,
+            opacity: 0.9,
+          });
+          this.player = new THREE.Mesh(geometry, material);
+
+          // 放在用户前方
+          this.player.position.set(
+            0,
+            xb.user.height - 0.5,
+            -xb.user.objectDistance
+          );
+          this.add(this.player);
+        }
+
+        // XR模式下捏合、桌面点击都会触发变色
+        onSelectEnd() {
+          this.player.material.color.set(Math.random() * 0xffffff);
+        }
+      }
+
+      document.addEventListener("DOMContentLoaded", () => {
+        xb.add(new MainScript());
+        const opts = new xb.Options();
+        // 如需更多手势事件：opts.enableGestures();
+        xb.init(opts);
+      });
+    </script>
+  </body>
+</html>
