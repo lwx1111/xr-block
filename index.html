@@ -2,68 +2,518 @@
 <html lang="en">
   <head>
     <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no" />
-    <title>XR Blocks Demo</title>
-
-    <!-- 样式（非必须，只是让画面更美观） -->
-    <link
-      rel="stylesheet"
-      href="https://cdn.jsdelivr.net/gh/google/xrblocks@build/samples/main.css"
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1.0, user-scalable=no"
     />
+    <title>XR Blocks | Rapid XR + AI Prototyping</title>
+    <style>
+      :root {
+        color-scheme: light dark;
+        --bg: #05060a;
+        --fg: #f5f7ff;
+        --muted: #9aa6c6;
+        --accent: #8ec5ff;
+        --accent-strong: #7adabf;
+        --card: rgba(255, 255, 255, 0.08);
+        --stroke: rgba(255, 255, 255, 0.18);
+        font-family: "Inter", "Segoe UI", system-ui, -apple-system, sans-serif;
+      }
 
-    <!-- importmap 负责声明 three / xrblocks 模块的来源 -->
-    <script type="importmap">
-      {
-        "imports": {
-          "three": "https://cdn.jsdelivr.net/npm/three@0.181.0/build/three.module.js",
-          "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.181.0/examples/jsm/",
-          "xrblocks": "https://cdn.jsdelivr.net/gh/google/xrblocks@build/xrblocks.js",
-          "xrblocks/addons/": "https://cdn.jsdelivr.net/gh/google/xrblocks@build/addons/"
+      * {
+        box-sizing: border-box;
+        margin: 0;
+        padding: 0;
+      }
+
+      body {
+        background: radial-gradient(circle at top, #111326, #05060a 55%);
+        color: var(--fg);
+        line-height: 1.6;
+        min-height: 100vh;
+      }
+
+      header {
+        padding: 2.5rem 6vw 4rem;
+      }
+
+      .nav {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 3rem;
+        gap: 1rem;
+      }
+
+      .logo {
+        font-weight: 700;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+      }
+
+      nav a {
+        color: var(--muted);
+        margin-left: 1rem;
+        text-decoration: none;
+        font-size: 0.95rem;
+        transition: color 0.2s ease;
+      }
+
+      nav a:hover {
+        color: var(--accent);
+      }
+
+      .hero {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+        gap: 2rem;
+        align-items: center;
+      }
+
+      .hero h1 {
+        font-size: clamp(2.2rem, 4vw, 3.5rem);
+        margin-bottom: 1rem;
+      }
+
+      .hero p {
+        color: var(--muted);
+        font-size: 1.05rem;
+      }
+
+      .hero-actions {
+        margin-top: 2rem;
+        display: flex;
+        flex-wrap: wrap;
+        gap: 1rem;
+      }
+
+      .hero-actions a {
+        padding: 0.85rem 1.6rem;
+        border-radius: 999px;
+        text-decoration: none;
+        border: 1px solid transparent;
+        font-weight: 600;
+      }
+
+      .cta {
+        background: linear-gradient(120deg, var(--accent), var(--accent-strong));
+        color: #05060a;
+      }
+
+      .secondary {
+        border-color: var(--stroke);
+        color: var(--fg);
+      }
+
+      main {
+        padding: 0 6vw 5rem;
+        display: flex;
+        flex-direction: column;
+        gap: 3.5rem;
+      }
+
+      section {
+        background: var(--card);
+        border: 1px solid var(--stroke);
+        border-radius: 18px;
+        padding: 2.5rem;
+        box-shadow: 0 12px 40px rgba(0, 0, 0, 0.3);
+      }
+
+      h2 {
+        font-size: 1.8rem;
+        margin-bottom: 1rem;
+      }
+
+      p + p {
+        margin-top: 1rem;
+      }
+
+      ul {
+        list-style-type: "▹ ";
+        padding-left: 1rem;
+        color: var(--muted);
+      }
+
+      li + li {
+        margin-top: 0.5rem;
+      }
+
+      .stats-grid,
+      .feature-grid,
+      .cards-grid,
+      .references {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+        gap: 1.25rem;
+        margin-top: 1.5rem;
+      }
+
+      .stat-card,
+      .feature-card,
+      .card {
+        border: 1px solid var(--stroke);
+        border-radius: 14px;
+        padding: 1.5rem;
+        background: rgba(5, 6, 10, 0.6);
+      }
+
+      .stat-card span {
+        font-size: 2rem;
+        font-weight: 700;
+        display: block;
+      }
+
+      code,
+      pre {
+        font-family: "JetBrains Mono", "Fira Code", ui-monospace, SFMono-Regular,
+          Consolas, monospace;
+      }
+
+      pre {
+        background: #05080f;
+        border: 1px solid #1d2233;
+        border-radius: 14px;
+        padding: 1.5rem;
+        overflow-x: auto;
+        font-size: 0.9rem;
+      }
+
+      .dev-steps {
+        counter-reset: step;
+      }
+
+      .dev-steps li {
+        list-style: none;
+        margin-bottom: 0.9rem;
+        padding-left: 2.3rem;
+        position: relative;
+        color: var(--fg);
+      }
+
+      .dev-steps li::before {
+        counter-increment: step;
+        content: counter(step);
+        position: absolute;
+        left: 0;
+        top: 0.15rem;
+        width: 1.6rem;
+        height: 1.6rem;
+        border-radius: 50%;
+        background: var(--accent);
+        color: #05060a;
+        display: grid;
+        place-items: center;
+        font-weight: 700;
+        font-size: 0.9rem;
+      }
+
+      footer {
+        text-align: center;
+        color: var(--muted);
+        padding: 3rem 1rem 2rem;
+        font-size: 0.9rem;
+      }
+
+      @media (max-width: 720px) {
+        header,
+        main {
+          padding-left: 5vw;
+          padding-right: 5vw;
+        }
+
+        .nav {
+          flex-direction: column;
+        }
+
+        nav a {
+          margin-left: 0;
         }
       }
-    </script>
+    </style>
   </head>
-
   <body>
-    <script type="module">
-      import * as THREE from "three";
-      import * as xb from "xrblocks";
+    <header id="top">
+      <div class="nav">
+        <div class="logo">XR Blocks</div>
+        <nav>
+          <a href="#about">About</a>
+          <a href="#features">Features</a>
+          <a href="#usage">Usage</a>
+          <a href="#dev">Dev Guide</a>
+          <a href="#security">Security</a>
+          <a href="#references">References</a>
+        </nav>
+      </div>
 
-      class MainScript extends xb.Script {
-        init() {
-          // 添加光源
-          this.add(new THREE.HemisphereLight(0xffffff, 0x666666, 3));
+      <div class="hero">
+        <div>
+          <h1>Rapid WebXR + WebAI prototyping</h1>
+          <p>
+            XR Blocks is a lightweight JavaScript framework built on three.js for
+            accelerating human-centered XR and AI experiences. Prototype hand
+            tracking, gestures, world understanding, and Gemini-powered AI
+            workflows directly in Chrome v136+ or on Android XR hardware.
+          </p>
+          <div class="hero-actions">
+            <a class="cta" href="https://xrblocks.github.io" target="_blank"
+              >Visit Site</a
+            >
+            <a
+              class="secondary"
+              href="https://github.com/google/xrblocks"
+              target="_blank"
+              >View on GitHub</a
+            >
+          </div>
+        </div>
+        <div>
+          <p>
+            Build immersive applications, toggle between desktop simulator and
+            device XR, and tap into Gemini for multimodal understanding—all in
+            one cohesive SDK.
+          </p>
+          <div class="stats-grid">
+            <div class="stat-card">
+              <span>144</span>
+              Stars
+            </div>
+            <div class="stat-card">
+              <span>11</span>
+              Forks
+            </div>
+            <div class="stat-card">
+              <span>2</span>
+              Watchers
+            </div>
+            <div class="stat-card">
+              <span>v0.3.1</span>
+              Latest release
+            </div>
+          </div>
+        </div>
+      </div>
+    </header>
 
-          // 创建一个圆柱体
-          const geometry = new THREE.CylinderGeometry(0.2, 0.2, 0.4, 32);
-          const material = new THREE.MeshPhongMaterial({
-            color: 0xffffff,
-            transparent: true,
-            opacity: 0.9,
-          });
-          this.player = new THREE.Mesh(geometry, material);
+    <main>
+      <section id="about">
+        <h2>Why XR Blocks?</h2>
+        <p>
+          Designed for rapid iteration, XR Blocks layers an approachable SDK on
+          top of three.js so you can focus on behavior, not boilerplate. It
+          targets Chrome with WebXR support on Android XR (e.g., Galaxy XR) and
+          includes a full-featured desktop simulator to keep teams productive.
+        </p>
+        <div class="feature-grid">
+          <div class="feature-card">
+            <strong>Hand Tracking &amp; Gestures</strong>
+            <p>
+              Toggle <code>options.enableGestures()</code> to tap into prebuilt
+              pinch, open-palm, fist, thumbs-up, point, and spread detections
+              with gesture lifecycle events.
+            </p>
+          </div>
+          <div class="feature-card">
+            <strong>World Understanding</strong>
+            <p>
+              Blend depth sensing, geometry-aware physics, and object
+              recognition. Pair it with Gemini for scene reasoning and live
+              conversation loops.
+            </p>
+          </div>
+          <div class="feature-card">
+            <strong>Cross-Platform Delivery</strong>
+            <p>
+              Build once, deploy to XR devices or Chrome desktop simulator
+              without rewriting interaction logic.
+            </p>
+          </div>
+          <div class="feature-card">
+            <strong>Community Driven</strong>
+            <p>
+              Maintained by XR Labs and collaborators; contributions welcome for
+              demos, depth-based interactions, visual programming hooks, and
+              more.
+            </p>
+          </div>
+        </div>
+      </section>
 
-          // 放在用户前方
-          this.player.position.set(
-            0,
-            xb.user.height - 0.5,
-            -xb.user.objectDistance
-          );
-          this.add(this.player);
-        }
+      <section id="features">
+        <h2>Highlights</h2>
+        <div class="cards-grid">
+          <div class="card">
+            <strong>Key Works</strong>
+            <p>
+              Ballpit, XR Emoji, Gemini Icebreakers, and templates for XR
+              communication showcase how quickly you can move from idea to demo.
+            </p>
+          </div>
+          <div class="card">
+            <strong>AI Integration</strong>
+            <p>
+              Interface with Gemini Live/Flash for multimodal understanding
+              inside XR scenes while keeping on-device processing where
+              possible.
+            </p>
+          </div>
+          <div class="card">
+            <strong>Developer Experience</strong>
+            <p>
+              Use ESLint, Prettier, and modern tooling with the provided
+              workspace configs. GitHub Actions target Node 24 out of the box.
+            </p>
+          </div>
+        </div>
+      </section>
 
-        // XR模式下捏合、桌面点击都会触发变色
-        onSelectEnd() {
-          this.player.material.color.set(Math.random() * 0xffffff);
-        }
-      }
+      <section id="usage">
+        <h2>Usage Example</h2>
+        <p>
+          Import XR Blocks with an import map and build an interactive scene with
+          just a few lines of code. Pinch in XR or click in the desktop emulator
+          to change the object's color:
+        </p>
+        <pre><code>&lt;script type="module"&gt;
+import * as THREE from 'three';
+import * as xb from 'xrblocks';
 
-      document.addEventListener("DOMContentLoaded", () => {
-        xb.add(new MainScript());
-        const opts = new xb.Options();
-        // 如需更多手势事件：opts.enableGestures();
-        xb.init(opts);
-      });
-    </script>
+class MainScript extends xb.Script {
+  init() {
+    this.add(new THREE.HemisphereLight(0xffffff, 0x666666, 3));
+    const geometry = new THREE.CylinderGeometry(0.2, 0.2, 0.4, 32);
+    const material = new THREE.MeshPhongMaterial({
+      color: 0xffffff,
+      transparent: true,
+      opacity: 0.8,
+    });
+    this.player = new THREE.Mesh(geometry, material);
+    this.player.position.set(0, xb.user.height - 0.5, -xb.user.objectDistance);
+    this.add(this.player);
+  }
+
+  onSelectEnd() {
+    this.player.material.color.set(Math.random() * 0xffffff);
+  }
+}
+
+document.addEventListener('DOMContentLoaded', () =&gt; {
+  xb.add(new MainScript());
+  xb.init(new xb.Options());
+});
+&lt;/script&gt;</code></pre>
+      </section>
+
+      <section id="dev">
+        <h2>Development Guide</h2>
+        <p>Spin up XR Blocks locally in minutes:</p>
+        <ol class="dev-steps">
+          <li>Clone: <code>git clone --depth=1 git@github.com:google/xrblocks.git</code></li>
+          <li>Install dependencies: <code>npm ci</code></li>
+          <li>Build distributable: <code>npm run build</code></li>
+          <li>Lint with ESLint: <code>npm run lint</code></li>
+          <li>Format with Prettier: <code>npm run format</code></li>
+        </ol>
+        <p>
+          Recommended extensions: ESLint + Prettier in VS Code with Prettier set
+          as the default formatter.
+        </p>
+      </section>
+
+      <section id="security">
+        <h2>User Data &amp; Permissions</h2>
+        <p>
+          WebXR, LiteRT hand tracking, depth sensing, and gesture recognition all
+          process data locally on device. Denying permissions may limit feature
+          behavior. Gemini-based AI features route data to Gemini servers—
+          follow their Privacy &amp; Terms when deploying.
+        </p>
+        <div class="cards-grid">
+          <div class="card">
+            <strong>Critical Security Rules</strong>
+            <ul>
+              <li>Never commit API keys or expose them in client bundles.</li>
+              <li>
+                Keep Gemini API keys secret—treat them like passwords tied to
+                quota and billing.
+              </li>
+              <li>Use environment variables or secure vaults in production.</li>
+            </ul>
+          </div>
+          <div class="card">
+            <strong>Uninstallation</strong>
+            <p>
+              Remove XR Blocks by deleting its importmap entries, JS imports, or
+              running <code>npm uninstall xrblocks</code> inside your project.
+            </p>
+          </div>
+        </div>
+      </section>
+
+      <section id="references">
+        <h2>References &amp; Related Work</h2>
+        <p>
+          Cite XR Blocks in research with the provided BibTeX entry and explore
+          related work to extend the ecosystem with visual programming,
+          Transformers.js, and depth-based interactions.
+        </p>
+        <div class="references">
+          <div class="card">
+            <strong>XR Blocks (Li et al., 2025)</strong>
+            <p>
+              <em>XR Blocks: Accelerating Human-centered AI + XR Innovation.</em>
+              arXiv:2509.25504.
+            </p>
+          </div>
+          <div class="card">
+            <strong>Sensible Agent (Lee et al., 2025)</strong>
+            <p>
+              UIST 2025 — unobtrusive interaction with proactive AR agents,
+              powered by XR Blocks concepts.
+            </p>
+          </div>
+          <div class="card">
+            <strong>Rapsai (Du et al., 2023)</strong>
+            <p>
+              CHI 2023 — visual programming for multimedia ML applications; a
+              call to integrate similar paradigms in XR Blocks.
+            </p>
+          </div>
+          <div class="card">
+            <strong>DialogLab (Hu et al., 2025)</strong>
+            <p>
+              UIST 2025 — dynamic group conversations in hybrid human–AI
+              settings, inspiring XR communications work.
+            </p>
+          </div>
+        </div>
+      </section>
+
+      <section>
+        <h2>Get Involved</h2>
+        <p>
+          XR Blocks thrives on community input. Open an issue for large efforts,
+          contribute new demos, or share tutorials so teams can reproduce your XR
+          research faster.
+        </p>
+        <div class="hero-actions">
+          <a class="cta" href="https://github.com/google/xrblocks/issues" target="_blank"
+            >Browse Issues</a
+          >
+          <a
+            class="secondary"
+            href="https://arxiv.org/abs/2509.25504"
+            target="_blank"
+            >Read the Paper</a
+          >
+        </div>
+      </section>
+    </main>
+
+    <footer>
+      XR Blocks is an open-source WebXR + WebAI SDK licensed under Apache-2.0.
+      Follow Google's Privacy &amp; Terms and Gemini's policies when using AI
+      features.
+    </footer>
   </body>
 </html>
