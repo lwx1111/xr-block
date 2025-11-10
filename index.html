@@ -7,6 +7,20 @@
       content="width=device-width, initial-scale=1.0, user-scalable=no"
     />
     <title>XR Blocks | Rapid XR + AI Prototyping</title>
+    <link
+      rel="stylesheet"
+      href="https://cdn.jsdelivr.net/gh/google/xrblocks@build/samples/main.css"
+    />
+    <script type="importmap">
+      {
+        "imports": {
+          "three": "https://cdn.jsdelivr.net/npm/three@0.181.0/build/three.module.js",
+          "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.181.0/examples/jsm/",
+          "xrblocks": "https://cdn.jsdelivr.net/gh/google/xrblocks@build/xrblocks.js",
+          "xrblocks/addons/": "https://cdn.jsdelivr.net/gh/google/xrblocks@build/addons/"
+        }
+      }
+    </script>
     <style>
       :root {
         color-scheme: light dark;
@@ -162,6 +176,12 @@
         font-size: 2rem;
         font-weight: 700;
         display: block;
+      }
+
+      .demo-panel {
+        margin-top: 1.25rem;
+        border: 1px dashed var(--stroke);
+        background: rgba(255, 255, 255, 0.04);
       }
 
       code,
@@ -404,6 +424,27 @@ document.addEventListener('DOMContentLoaded', () =&gt; {
 &lt;/script&gt;</code></pre>
       </section>
 
+      <section id="live-demo">
+        <h2>Live Demo</h2>
+        <p>
+          The canvas below runs the same sample using live XR Blocks modules.
+          Click <em>Enter Emulator</em> on desktop or <em>Enter XR</em> on a WebXR
+          device, then pinch/click to randomize the cylinder color.
+        </p>
+        <ul>
+          <li>Desktop simulator mirrors select events so you can iterate quickly.</li>
+          <li>On supported XR headsets, grant permissions when prompted.</li>
+          <li>
+            Toggle <code>options.enableGestures()</code> in code to unlock more
+            gesture events.
+          </li>
+        </ul>
+        <div class="card demo-panel">
+          <strong>Tip:</strong> Use Chrome v136+ for the smoothest WebXR + WebAI
+          experience.
+        </div>
+      </section>
+
       <section id="dev">
         <h2>Development Guide</h2>
         <p>Spin up XR Blocks locally in minutes:</p>
@@ -515,5 +556,41 @@ document.addEventListener('DOMContentLoaded', () =&gt; {
       Follow Google's Privacy &amp; Terms and Gemini's policies when using AI
       features.
     </footer>
+
+    <script type="module">
+      import * as THREE from "three";
+      import * as xb from "xrblocks";
+
+      class LandingDemo extends xb.Script {
+        init() {
+          // Lightweight lighting for the sample mesh.
+          this.add(new THREE.HemisphereLight(0xffffff, 0x666666, 3));
+
+          const geometry = new THREE.CylinderGeometry(0.2, 0.2, 0.4, 32);
+          const material = new THREE.MeshPhongMaterial({
+            color: 0xffffff,
+            transparent: true,
+            opacity: 0.85,
+          });
+          this.player = new THREE.Mesh(geometry, material);
+          this.player.position.set(
+            0,
+            xb.user.height - 0.5,
+            -xb.user.objectDistance
+          );
+          this.add(this.player);
+        }
+
+        onSelectEnd() {
+          this.player.material.color.set(Math.random() * 0xffffff);
+        }
+      }
+
+      document.addEventListener("DOMContentLoaded", () => {
+        xb.add(new LandingDemo());
+        const options = new xb.Options();
+        xb.init(options);
+      });
+    </script>
   </body>
 </html>
